@@ -5,6 +5,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan("com.iffomko.apsofttesttask")
-public class ApplicationConfiguration {
-
-}
+public class ApplicationConfiguration {  }

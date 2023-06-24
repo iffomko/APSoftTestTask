@@ -5,18 +5,25 @@ import com.iffomko.apsofttesttask.services.responses.FilesLoaderResponse;
 import com.iffomko.apsofttesttask.services.responses.enums.FileLoaderResponseCodes;
 import com.iffomko.apsofttesttask.services.parser.IFileParser;
 import com.iffomko.apsofttesttask.services.responses.enums.FileLoaderResponseMessages;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Сервис с бизнес-логикой по обработке загружаемых файлов.
  */
 @Service
+@Slf4j
 public class FilesLoaderService {
     private final IFileParser fileParser;
 
@@ -39,17 +46,67 @@ public class FilesLoaderService {
      */
     public ResponseEntity<?> parseFile(MultipartFile multipartFile) {
         try {
-            String fileText = new String(multipartFile.getBytes());
-            String resultText = this.fileParser.parse(fileText);
+            if (!(Objects.equals(multipartFile.getContentType(), MediaType.TEXT_PLAIN_VALUE))) {
+                log.error(MessageFormat.format(
+                        "Invalid content-type in the request: {0}",
+                        multipartFile.getContentType()
+                ));
+                return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
+                        FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name(),
+                        FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage()
+                ));
+            }
 
-            return ResponseEntity.ok(new FilesLoaderResponse(
-                    FileLoaderResponseCodes.SUCCESS.name(),
-                    resultText
-            ));
+            String filename = UUID.randomUUID().toString();
+            String fileExtension = ".txt";
+
+            File tempDir = new File("./temp/");
+            tempDir.deleteOnExit();
+
+            if (!tempDir.exists()) {
+                tempDir.mkdirs();
+            }
+
+            File tempFile = File.createTempFile(filename, fileExtension, tempDir);
+            tempFile.deleteOnExit();
+
+            try (BufferedOutputStream tempFileOutput = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                tempFileOutput.write(multipartFile.getBytes());
+            }
+
+            try {
+                String resultText = this.fileParser.parse(tempFile);
+
+                return ResponseEntity.ok(new FilesLoaderResponse(
+                        FileLoaderResponseCodes.SUCCESS.name(),
+                        resultText
+                ));
+            } finally {
+                if (!tempFile.delete()) {
+                    log.error(MessageFormat.format(
+                            "Failed delete temporary file with path: {0}",
+                            tempFile.getAbsolutePath()
+                    ));
+                }
+
+                if (tempDir.isDirectory() && Objects.requireNonNull(tempDir.listFiles()).length == 0 && !tempDir.delete()) {
+                    log.error(MessageFormat.format(
+                            "Failed delete temporary directory with path: {0}",
+                            tempDir.getAbsolutePath()
+                    ));
+                }
+            }
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
-                    FileLoaderResponseCodes.INCORRECT_ENCODING_OR_FILE.name(),
-                    FileLoaderResponseMessages.INCORRECT_ENCODING_OR_FILE.getMessage()
+            log.error(MessageFormat.format("Failed to create a temporary file: {0}", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
+                    FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
+                    FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
+            ));
+        } catch (Exception e) {
+            log.error(MessageFormat.format("Error: {0}", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
+                    FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
+                    FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
             ));
         }
     }
