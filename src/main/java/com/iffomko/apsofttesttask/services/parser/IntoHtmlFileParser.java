@@ -197,7 +197,7 @@ public class IntoHtmlFileParser implements IFileParser {
      * @return строка, которую можно поставить в начало каждого раздела
      */
     private static String printDepth(int depth) {
-        return "-".repeat(Math.max(0, depth - 1));
+        return "-".repeat(Math.max(0, depth));
     }
 
     /**
@@ -205,9 +205,14 @@ public class IntoHtmlFileParser implements IFileParser {
      *
      * @param splitText список строчек, которые надо обработать
      * @return переформатированный текст
+     * @throws IllegalArgumentException возникает тогда, когда входящий список является null
      */
     @Override
     public String parse(List<String> splitText) {
+        if (splitText == null) {
+            throw new IllegalArgumentException(FileParserEnum.ILLEGAL_STATE_EXCEPTION.getMessage());
+        }
+
         List<String> lines = new ArrayList<>();
         List<SectionItem> notParsedSections = new ArrayList<>();
 
@@ -233,7 +238,7 @@ public class IntoHtmlFileParser implements IFileParser {
 
             String sectionName = removeSectionDesignator(sectionTitle, sectionTag);
             String depth = printDepth(currentDepth);
-            String sectionId = String.format("%d_%d", sectionIndex, Math.abs(section.hashCode()));
+            String sectionId = String.format("%d_%d", sectionIndex, Math.abs(sectionTitle.hashCode()));
 
             parsedSections.add(new Section(MessageFormat.format("{0} {1}", depth, sectionName), sectionId));
 
@@ -247,7 +252,7 @@ public class IntoHtmlFileParser implements IFileParser {
             }
 
             return new Paragraph(item, null).parse();
-        }).collect(Collectors.joining(""));
+        }).collect(Collectors.joining("\n"));
 
         return new Html(parsedSections, text).parse();
     }
