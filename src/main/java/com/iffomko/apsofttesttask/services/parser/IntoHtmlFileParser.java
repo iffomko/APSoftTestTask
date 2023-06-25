@@ -6,20 +6,19 @@ import org.springframework.stereotype.Service;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
  * <p>Парсер, который обрабатывает текст.</p>
  * <p>Входной файл должен иметь следующий формат:</p>
- * <p>&nbsp;&nbsp;1. В начале каждой подстроки может быть признак начала раздела или подраздела - символ #</p>
- * <p>&nbsp;&nbsp;2. Количество символов "#" в начале строки указывает на уровень вложенности раздела</p>
+ * <p>&nbsp;&nbsp;1. В начале каждой подстроки может быть признак начала раздела или подраздела</p>
+ * <p>&nbsp;&nbsp;2. Количество символов этих символов в начале строки указывает на уровень вложенности раздела</p>
  * <p>Выходная строчка будет иметь формат html следующего вида:</p>
  * <p>&nbsp;&nbsp;1. Сначала идет блок "Содержание", где отображены все разделы</p>
  * <p>&nbsp;&nbsp;2. И сразу после него весь текст</p>
  */
-@Service("fileParser")
-public class FileParser implements IFileParser {
+@Service("intoHtmlFileParser")
+public class IntoHtmlFileParser implements IFileParser {
 
     /**
      * Разделы, которые ссылаются на определенную позицию в тексте
@@ -29,7 +28,7 @@ public class FileParser implements IFileParser {
     private record Section(String data, String id) {
         public String parse() {
             return MessageFormat.format(
-                    "<div><a href=\"#{0}\">{1}</a></div>",
+                    "<div><a class=\"section_link\" href=\"#{0}\">{1}</a></div>",
                     id, data);
         }
     }
@@ -68,23 +67,26 @@ public class FileParser implements IFileParser {
                                         font-family: 'Roboto', sans-serif;
                                         color: #333;
                                         font-size: 15px;
-                                        font-style: italic;
+                                        font-style: normal;
                                         font-weight: 400;
                                         text-decoration: none;
                                     }
                                     a:visited, a:focus, a:hover {
                                         color: #333;
                                     }
-                                    a:hover {
+                                    a.section_link {
+                                        font-style: italic;
+                                    }
+                                    a.section_link:hover {
                                         text-decoration: underline;
                                     }
                                     h1 {
                                         font-family: 'Roboto', sans-serif;
                                         color: #333;
-                                        font-size: 25px;
+                                        font-size: 22px;
                                         font-weight: 400;
                                                         
-                                        margin: 15px 0;
+                                        margin: 10px 0;
                                     }
                                 </style>
                             </head>
@@ -141,7 +143,7 @@ public class FileParser implements IFileParser {
     /**
      * @param sectionTag определяющий признак раздела
      */
-    public FileParser(@Value("${section.tag}") Character sectionTag) {
+    public IntoHtmlFileParser(@Value("${section.tag}") Character sectionTag) {
         this.sectionTag = sectionTag;
     }
 
@@ -168,7 +170,7 @@ public class FileParser implements IFileParser {
 
     /**
      * Определяет вложенность размера.
-     * Все зависит от количества символа '#' в начале строки.
+     * Все зависит от количества символа определяющего начало секции в начале строки.
      * @param section сам раздел
      * @param sectionTag определяющий признак раздела
      * @return возвращает 0, если это не раздел, или число, которое соответствует вложенности раздела
@@ -212,7 +214,7 @@ public class FileParser implements IFileParser {
         for (String line : splitText) {
             lines.add(removeSectionDesignator(line, sectionTag));
 
-            if (line.startsWith("#")) {
+            if (line.startsWith(sectionTag.toString())) {
                 notParsedSections.add(new SectionItem(index, line));
             }
 
@@ -229,7 +231,7 @@ public class FileParser implements IFileParser {
 
             String sectionName = removeSectionDesignator(sectionTitle, sectionTag);
             String depth = printDepth(currentDepth);
-            String sectionId = UUID.randomUUID().toString();
+            String sectionId = String.format("%d_%d", sectionIndex, Math.abs(section.hashCode()));
 
             parsedSections.add(new Section(MessageFormat.format("{0} {1}", depth, sectionName), sectionId));
 

@@ -33,7 +33,7 @@ public class FilesLoaderService {
      * @param fileParser парсер файлов
      */
     @Autowired
-    public FilesLoaderService(@Qualifier("fileParser") IFileParser fileParser) {
+    public FilesLoaderService(@Qualifier("intoHtmlFileParser") IFileParser fileParser) {
         this.fileParser = fileParser;
     }
 
