@@ -36,6 +36,39 @@ public class FilesLoaderService {
     }
 
     /**
+     * Создает временный файл в директории './temp/'
+     * @return возвращает этот временный файл
+     * @throws IOException возникает тогда, когда не удалось создать файл
+     */
+    private File createTempFile() throws IOException {
+        String filename = UUID.randomUUID().toString();
+
+        File tempDir = new File("./temp/");
+        tempDir.deleteOnExit();
+
+        if (!tempDir.exists()) {
+            tempDir.mkdirs();
+        }
+
+        File tempFile = File.createTempFile(filename, ".txt", tempDir);
+        tempFile.deleteOnExit();
+
+        return tempFile;
+    }
+
+    /**
+     * Пишет данные в виде байтов в файл
+     * @param file файл, в который надо записать данные
+     * @param bytes данные
+     * @throws IOException возникает тогда, когда не удалось записать данные в файл
+     */
+    private void writeBytes(File file, byte[] bytes) throws IOException {
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+            outputStream.write(bytes);
+        }
+    }
+
+    /**
      * <p>
      *     Парсит текстовый файл из формата, где символ '#' указывает на начало раздела,
      *     а количество повторений этого символа для раздела указывает на его вложенность,
@@ -57,22 +90,8 @@ public class FilesLoaderService {
                 ));
             }
 
-            String filename = UUID.randomUUID().toString();
-            String fileExtension = ".txt";
-
-            File tempDir = new File("./temp/");
-            tempDir.deleteOnExit();
-
-            if (!tempDir.exists()) {
-                tempDir.mkdirs();
-            }
-
-            File tempFile = File.createTempFile(filename, fileExtension, tempDir);
-            tempFile.deleteOnExit();
-
-            try (BufferedOutputStream tempFileOutput = new BufferedOutputStream(new FileOutputStream(tempFile))) {
-                tempFileOutput.write(multipartFile.getBytes());
-            }
+            File tempFile = createTempFile();
+            writeBytes(tempFile, multipartFile.getBytes());
 
             try {
                 String resultText = this.fileParser.parse(tempFile);
@@ -88,16 +107,12 @@ public class FilesLoaderService {
                             tempFile.getAbsolutePath()
                     ));
                 }
-
-                if (tempDir.isDirectory() && Objects.requireNonNull(tempDir.listFiles()).length == 0 && !tempDir.delete()) {
-                    log.error(MessageFormat.format(
-                            "Failed delete temporary directory with path: {0}",
-                            tempDir.getAbsolutePath()
-                    ));
-                }
             }
         } catch (IOException e) {
-            log.error(MessageFormat.format("Failed to create a temporary file: {0}", e.getMessage()));
+            log.error(MessageFormat.format(
+                    "Failed to create a temporary file or write data to it: {0}",
+                    e.getMessage()
+            ));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
                     FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()

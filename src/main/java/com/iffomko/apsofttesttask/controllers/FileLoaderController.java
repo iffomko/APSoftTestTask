@@ -7,8 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * Контроллер, который обслуживает файлы
+ */
 @RestController
-@RequestMapping("api/v1/file-parser")
+@RequestMapping("api/v1/files")
 public class FileLoaderController {
     private final FilesLoaderService filesLoaderService;
 
@@ -21,11 +24,13 @@ public class FileLoaderController {
     }
 
     /**
-     * Endpoint, который принимает текстовый файл и парсит его в необходимый формат
+     * Endpoint, который принимает текстовый файл и парсит его в html формат,
+     * где сначала идет содержание текст (раздел помечается определяющим признаком в начале строки
+     * исходного текста), а затем сам текст
      * @param textFile текстовый файл полученный из сети
      */
     @PostMapping(
-            path = "/parse",
+            path = "/html-parser",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )

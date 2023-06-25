@@ -1,5 +1,6 @@
 package com.iffomko.apsofttesttask.services.parser;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -18,6 +19,12 @@ import java.util.stream.Collectors;
  */
 @Service("fileParser")
 public class FileParser implements IFileParser {
+
+    /**
+     * Разделы, которые ссылаются на определенную позицию в тексте
+     * @param data содержание разделов
+     * @param id идентификатор раздела, на который надо ссылаться в исходном тексте
+     */
     private record Section(String data, String id) {
         public String parse() {
             return MessageFormat.format(
@@ -26,6 +33,12 @@ public class FileParser implements IFileParser {
         }
     }
 
+    /**
+     * Запись, которая содержит в себе шаблон HTML страницы.
+     * В неё вкладываются разделы и сам текст
+     * @param sections разделы, которые ссылаются на определенную позицию в тексте
+     * @param text исходный текст
+     */
     private record Html(List<Section> sections, String text) {
         public String parse() {
             String sectionsText = sections
@@ -55,6 +68,15 @@ public class FileParser implements IFileParser {
         }
     }
 
+    /**
+     * Параграф для одного текста.
+     * Это обычный HTML-тег <code>div</code>, в который
+     * вкладываются данные. Если <code>id</code> не null,
+     * то внутрь <code>div</code> вкладывается ссылка, у которой
+     * имя равна этому id
+     * @param data данные, которые нужно вложить
+     * @param id имя для ссылки
+     */
     private record Paragraph(String data, String id) {
         public String parse() {
             if (id == null) {
@@ -72,43 +94,76 @@ public class FileParser implements IFileParser {
         }
     }
 
+    /**
+     * Запись для элемента в списке разделов
+     * @param index строка в исходном тексте
+     * @param sectionTitle название раздела
+     */
     private record SectionItem(int index, String sectionTitle) {
     }
 
-    private static String removeSectionDesignator(String line) {
-        if (!line.startsWith("#")) {
+    private final Character sectionTag;
+
+    /**
+     * @param sectionTag определяющий признак раздела
+     */
+    public FileParser(@Value("${section.tag}") Character sectionTag) {
+        this.sectionTag = sectionTag;
+    }
+
+    /**
+     * Удаляет определяющий признак раздела, т. е. он удалит
+     * все подряд идущие с начала строки признаки раздела.
+     * @param line строка, в которой надо его удалить
+     * @param sectionTag определяющий признак раздела
+     * @return строка без этого признака
+     */
+    private static String removeSectionDesignator(String line, Character sectionTag) {
+        if (!line.startsWith(sectionTag.toString())) {
             return line;
         }
 
         int index = 0;
 
-        for (; (index < line.length()) && (line.charAt(index) == '#'); index++) {
+        for (; (index < line.length()) && (line.charAt(index) == sectionTag); index++) {
             continue;
         }
 
         return line.substring(index);
     }
 
-    private static int getDepth(String section) {
-        if (!section.startsWith("#")) {
+    /**
+     * Определяет вложенность размера.
+     * Все зависит от количества символа '#' в начале строки.
+     * @param section сам раздел
+     * @param sectionTag определяющий признак раздела
+     * @return возвращает 0, если это не раздел, или число, которое соответствует вложенности раздела
+     */
+    private static int getDepth(String section, Character sectionTag) {
+        if (!section.startsWith(sectionTag.toString())) {
             return 0;
         }
 
-        int index = 0;
+        int depth = 0;
 
-        for (; (index < section.length()) && (section.charAt(index) == '#'); index++) {
+        for (; (depth < section.length()) && (section.charAt(depth) == sectionTag); depth++) {
             continue;
         }
 
-        return index;
+        return depth;
     }
 
+    /**
+     * Возвращает строку соответствующую вложенности раздела.
+     * @param depth вложенность раздела
+     * @return строка, которую можно поставить в начало каждого раздела
+     */
     private static String printDepth(int depth) {
         return "-".repeat(Math.max(0, depth - 1));
     }
 
     /**
-     * Метод, который парсит текст файла в определенный формат
+     * Метод, который парсит текст файла в определенный формат.
      *
      * @param file файл, текст которого нужно обработать
      * @return переформатированный текст файла
@@ -129,7 +184,7 @@ public class FileParser implements IFileParser {
             int index = 0;
 
             for (String line : splitFile) {
-                lines.add(removeSectionDesignator(line));
+                lines.add(removeSectionDesignator(line, sectionTag));
 
                 if (line.startsWith("#")) {
                     notParsedSections.add(new SectionItem(index, line));
@@ -144,9 +199,9 @@ public class FileParser implements IFileParser {
                 String sectionTitle = section.sectionTitle();
                 int sectionIndex = section.index();
 
-                int currentDepth = getDepth(sectionTitle);
+                int currentDepth = getDepth(sectionTitle, sectionTag);
 
-                String sectionName = removeSectionDesignator(sectionTitle);
+                String sectionName = removeSectionDesignator(sectionTitle, sectionTag);
                 String depth = printDepth(currentDepth);
                 String sectionId = UUID.randomUUID().toString();
 

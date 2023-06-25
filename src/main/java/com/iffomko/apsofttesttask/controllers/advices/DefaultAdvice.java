@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.web.ErrorResponseException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -30,9 +29,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.text.MessageFormat;
 import java.util.Objects;
 
+/**
+ * Обработчик базовых исключений, которые есть в классе <code>ResponseEntityExceptionHandler</code>
+ */
 @Slf4j
 @RestControllerAdvice
 public class DefaultAdvice extends ResponseEntityExceptionHandler {
+    /**
+     * Перехватывает исключение <code>HttpRequestMethodNotSupportedException</code>,
+     * которое возникает тогда, когда обработчик запросов не поддерживает метод
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
             HttpRequestMethodNotSupportedException ex,
@@ -50,6 +61,16 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>HttpMediaTypeNotSupportedException</code>,
+     * которое возникает тогда, когда тип контента в POSTs, PUTs, PATCHes запросах
+     * не поддерживается обработчиком запросов
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
             HttpMediaTypeNotSupportedException ex,
@@ -67,6 +88,16 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>HttpMediaTypeNotAcceptableException</code>,
+     * которое возникает когда у клиента заголовок <code>Accept</code>, не поддерживает
+     * тот тип, который хочет вернуть сервер
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(
             HttpMediaTypeNotAcceptableException ex,
@@ -83,6 +114,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>MissingPathVariableException</code>,
+     * которое возникает когда клиент в URI пропустил необходимую переменную
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleMissingPathVariable(
             MissingPathVariableException ex,
@@ -99,6 +139,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>MissingServletRequestParameterException</code>,
+     * которое возникает когда клиент пропустил необходимый параметр
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
@@ -121,6 +170,16 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>MissingServletRequestPartException</code>,
+     * которое возникает когда сервер не нашел часть 'multipart/form-data' запроса
+     * с указанным именем
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestPart(
             MissingServletRequestPartException ex,
@@ -141,6 +200,16 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>ServletRequestBindingException</code>,
+     * которое возникает когда исключения привязки мы хотим рассматривать как
+     * неустранимые
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleServletRequestBindingException(
             ServletRequestBindingException ex,
@@ -156,6 +225,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>MethodArgumentNotValidException</code>,
+     * которое возникает когда аргумент в методе не валидный
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -176,6 +254,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>NoHandlerFoundException</code>,
+     * которое возникает когда не нашлось подходящего обработчика запросов
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex,
@@ -196,6 +283,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>AsyncRequestTimeoutException</code>,
+     * которое возникает когда время выполнения асинхронного запроса вышло
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleAsyncRequestTimeoutException(
             AsyncRequestTimeoutException ex,
@@ -211,21 +307,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
-    @Override
-    protected ResponseEntity<Object> handleErrorResponseException(
-            ErrorResponseException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request
-    ) {
-        log.debug(ex.getMessage());
-        return ResponseEntity.status(status.value()).body(new BaseResponse(
-                ex.getMessage(),
-                AdviceCodes.ERROR_RESPONSE_EXCEPTION.name(),
-                status.value()
-        ));
-    }
-
+    /**
+     * Перехватывает исключение <code>ConversionNotSupportedException</code>,
+     * которое возникает когда не удалось конвертировать данные в конкретный бин
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleConversionNotSupported(
             ConversionNotSupportedException ex,
@@ -241,6 +331,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>TypeMismatchException</code>,
+     * которое возникает когда при конвертировании бин тип данных и тип поля не совпали
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(
             TypeMismatchException ex,
@@ -256,6 +355,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>HttpMessageNotReadableException</code>,
+     * которое возникает когда не удалось прочитать HTTP запрос
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
@@ -271,6 +379,15 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         ));
     }
 
+    /**
+     * Перехватывает исключение <code>HttpMessageNotWritableException</code>,
+     * которое возникает, когда Spring не удается получить свойства возвращаемого объекта
+     * @param ex перехваченное исключение
+     * @param headers заголовки запроса
+     * @param status код ответа
+     * @param request сам запрос
+     * @return ответ клиенту в виде JSON
+     */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotWritable(
             HttpMessageNotWritableException ex,
