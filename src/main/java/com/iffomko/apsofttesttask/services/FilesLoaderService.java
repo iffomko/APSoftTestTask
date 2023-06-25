@@ -80,7 +80,6 @@ public class FilesLoaderService {
             ));
         } catch (Exception e) {
             log.error(MessageFormat.format("Error: {0}", e.getMessage()));
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
                     FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()

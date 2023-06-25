@@ -3,20 +3,22 @@ package com.iffomko.apsofttesttask;
 import com.iffomko.apsofttesttask.services.parser.FileParserEnum;
 import com.iffomko.apsofttesttask.services.parser.IFileParser;
 import com.iffomko.apsofttesttask.services.parser.IntoHtmlFileParser;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IntoHtmlFileParserTest {
+public class IntoHtmlFileParserTests {
     private final IFileParser fileParser;
 
-    public IntoHtmlFileParserTest() {
+    public IntoHtmlFileParserTests() {
         this.fileParser = new IntoHtmlFileParser('#');
     }
 
     @Test
+    @DisplayName("Тестирование случая с имеющимися секциями")
     void testTextWithSections() {
         String text = """
                 GREATEST MAN IN ALIVE
@@ -93,6 +95,7 @@ public class IntoHtmlFileParserTest {
     }
 
     @Test
+    @DisplayName("Тестирование случая без секций")
     void testTextWithoutSections() {
         String text = """
                 GREATEST MAN IN ALIVE
@@ -179,6 +182,7 @@ public class IntoHtmlFileParserTest {
     }
 
     @Test
+    @DisplayName("Тестирование случая, когда входящие строки равны null")
     void testInputLinesIsNull() {
         try {
             fileParser.parse(null);

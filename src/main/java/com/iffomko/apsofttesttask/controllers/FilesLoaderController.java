@@ -12,14 +12,14 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("api/v1/files")
-public class FileLoaderController {
+public class FilesLoaderController {
     private final FilesLoaderService filesLoaderService;
 
     /**
      * @param filesLoaderService класс-сервис, который обслуживает этот контроллер
      */
     @Autowired
-    public FileLoaderController(FilesLoaderService filesLoaderService) {
+    public FilesLoaderController(FilesLoaderService filesLoaderService) {
         this.filesLoaderService = filesLoaderService;
     }
 
