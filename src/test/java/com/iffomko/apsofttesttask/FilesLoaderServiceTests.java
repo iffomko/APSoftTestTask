@@ -30,7 +30,7 @@ public class FilesLoaderServiceTests {
     private final FilesLoaderService service = new FilesLoaderService(parser);
 
     @Test
-    @DisplayName("Тестирование обычного случая")
+    @DisplayName("Тестирование позитивного сценария")
     void testPositiveCase() {
         String inputText = """
                 GREATEST MAN IN ALIVE
@@ -112,12 +112,12 @@ public class FilesLoaderServiceTests {
         when(parser.parse(anyList())).thenReturn(outputText);
 
         ResponseEntity<?> actualResult = service.parseFile(multipartFile);
-        ResponseEntity<FilesLoaderResponse> expectedResult = ResponseEntity.ok(new FilesLoaderResponse(
-                FileLoaderResponseCodes.SUCCESS.name(),
-                outputText
-        ));
+        FilesLoaderResponse body = (FilesLoaderResponse) actualResult.getBody();
 
-        assertEquals(expectedResult, actualResult);
+        assertEquals(HttpStatus.OK, actualResult.getStatusCode());
+        assert body != null;
+        assertEquals(outputText, body.getData());
+        assertEquals(FileLoaderResponseCodes.SUCCESS.name(), body.getCode());
     }
 
     @Test
@@ -126,12 +126,12 @@ public class FilesLoaderServiceTests {
         when(multipartFile.getContentType()).thenReturn(MediaType.MULTIPART_FORM_DATA_VALUE);
 
         ResponseEntity<?> actualResult = service.parseFile(multipartFile);
-        ResponseEntity<?> expectedResult = ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
-                FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name(),
-                FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage()
-        ));
+        FilesLoaderErrorResponse body = (FilesLoaderErrorResponse) actualResult.getBody();
 
-        assertEquals(expectedResult, actualResult);
+        assertEquals(HttpStatus.BAD_REQUEST, actualResult.getStatusCode());
+        assert body != null;
+        assertEquals(FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name(), body.getCode());
     }
 
     @Test
@@ -145,23 +145,23 @@ public class FilesLoaderServiceTests {
         }
 
         ResponseEntity<?> actualResult = service.parseFile(multipartFile);
-        ResponseEntity<?> expectedResult = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
-                FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
-                FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
-        ));
+        FilesLoaderErrorResponse body = (FilesLoaderErrorResponse) actualResult.getBody();
 
-        assertEquals(expectedResult, actualResult);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResult.getStatusCode());
+        assert body != null;
+        assertEquals(FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name(), body.getCode());
     }
 
     @Test
     @DisplayName("Тестирование когда файл равен null")
     void testForInputMultipartFileIsNull() {
-        ResponseEntity<?> expectedResult = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
-                FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
-                FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
-        ));
         ResponseEntity<?> actualResult = service.parseFile(null);
+        FilesLoaderErrorResponse body = (FilesLoaderErrorResponse) actualResult.getBody();
 
-        assertEquals(expectedResult, actualResult);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResult.getStatusCode());
+        assert body != null;
+        assertEquals(FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name(), body.getCode());
     }
 }
