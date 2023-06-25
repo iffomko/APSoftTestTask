@@ -30,11 +30,11 @@ public class FilesLoaderController {
      * @param textFile текстовый файл полученный из сети
      */
     @PostMapping(
-            path = "/html-parser",
+            path = "/parser",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> parseFile(@RequestParam("file") MultipartFile textFile) {
+    public ResponseEntity<?> handlePostFileParser(@RequestParam("file") MultipartFile textFile) {
         return filesLoaderService.parseFile(textFile);
     }
 }

@@ -65,8 +65,8 @@ public class FilesLoaderService {
                         multipartFile.getContentType()
                 ));
                 return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
-                        FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name(),
-                        FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage()
+                        FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage(),
+                        FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name()
                 ));
             }
 

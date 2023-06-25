@@ -88,7 +88,6 @@ public class IntoHtmlFileParserTests {
                 chapterOneTag,
                 jacksTag
         );
-
         String actualResult = fileParser.parse(new ArrayList<>(List.of(text.split("\n"))));
 
         assertEquals(expectedResult, actualResult);

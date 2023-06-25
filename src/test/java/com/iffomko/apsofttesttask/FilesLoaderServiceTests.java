@@ -10,7 +10,6 @@ import com.iffomko.apsofttesttask.services.responses.enums.FileLoaderResponseMes
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
@@ -113,7 +112,6 @@ public class FilesLoaderServiceTests {
         when(parser.parse(anyList())).thenReturn(outputText);
 
         ResponseEntity<?> actualResult = service.parseFile(multipartFile);
-
         ResponseEntity<FilesLoaderResponse> expectedResult = ResponseEntity.ok(new FilesLoaderResponse(
                 FileLoaderResponseCodes.SUCCESS.name(),
                 outputText
@@ -125,14 +123,13 @@ public class FilesLoaderServiceTests {
     @Test
     @DisplayName("Тестирование несовпадения типа загружаемого ресурса")
     void testForNotEqualsMediaTypeOfFile() {
+        when(multipartFile.getContentType()).thenReturn(MediaType.MULTIPART_FORM_DATA_VALUE);
+
+        ResponseEntity<?> actualResult = service.parseFile(multipartFile);
         ResponseEntity<?> expectedResult = ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
                 FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name(),
                 FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage()
         ));
-
-        when(multipartFile.getContentType()).thenReturn(MediaType.MULTIPART_FORM_DATA_VALUE);
-
-        ResponseEntity<?> actualResult = service.parseFile(multipartFile);
 
         assertEquals(expectedResult, actualResult);
     }
@@ -140,11 +137,6 @@ public class FilesLoaderServiceTests {
     @Test
     @DisplayName("Тестирование непредвиденного исключения")
     void testForInternalServerError() {
-        ResponseEntity<?> expectedResult = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
-                FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
-                FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
-        ));
-
         try {
             when(multipartFile.getContentType()).thenReturn(MediaType.TEXT_PLAIN_VALUE);
             when(multipartFile.getBytes()).thenThrow(new IOException("Failed to get bytes"));
@@ -153,6 +145,10 @@ public class FilesLoaderServiceTests {
         }
 
         ResponseEntity<?> actualResult = service.parseFile(multipartFile);
+        ResponseEntity<?> expectedResult = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
+                FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
+                FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
+        ));
 
         assertEquals(expectedResult, actualResult);
     }
@@ -164,7 +160,6 @@ public class FilesLoaderServiceTests {
                 FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
                 FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
         ));
-
         ResponseEntity<?> actualResult = service.parseFile(null);
 
         assertEquals(expectedResult, actualResult);
