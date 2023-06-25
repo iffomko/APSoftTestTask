@@ -14,10 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Сервис с бизнес-логикой по обработке загружаемых файлов.
@@ -36,36 +38,14 @@ public class FilesLoaderService {
     }
 
     /**
-     * Создает временный файл в директории './temp/'
-     * @return возвращает этот временный файл
-     * @throws IOException возникает тогда, когда не удалось создать файл
+     * Разбивает строку на строчки по CRLF (либо CR, либо LF, либо то и то)
+     * @param bytes строчка в байтах
+     * @return список строчек
      */
-    private File createTempFile() throws IOException {
-        String filename = UUID.randomUUID().toString();
+    private List<String> getLines(byte[] bytes) {
+        String text = new String(bytes);
 
-        File tempDir = new File("./temp/");
-        tempDir.deleteOnExit();
-
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-
-        File tempFile = File.createTempFile(filename, ".txt", tempDir);
-        tempFile.deleteOnExit();
-
-        return tempFile;
-    }
-
-    /**
-     * Пишет данные в виде байтов в файл
-     * @param file файл, в который надо записать данные
-     * @param bytes данные
-     * @throws IOException возникает тогда, когда не удалось записать данные в файл
-     */
-    private void writeBytes(File file, byte[] bytes) throws IOException {
-        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
-            outputStream.write(bytes);
-        }
+        return Arrays.stream(text.split("\r|\n|\r\n")).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -90,35 +70,17 @@ public class FilesLoaderService {
                 ));
             }
 
-            File tempFile = createTempFile();
-            writeBytes(tempFile, multipartFile.getBytes());
+            List<String> lines = getLines(multipartFile.getBytes());
 
-            try {
-                String resultText = this.fileParser.parse(tempFile);
+            String resultText = this.fileParser.parse(lines);
 
-                return ResponseEntity.ok(new FilesLoaderResponse(
-                        FileLoaderResponseCodes.SUCCESS.name(),
-                        resultText
-                ));
-            } finally {
-                if (!tempFile.delete()) {
-                    log.error(MessageFormat.format(
-                            "Failed delete temporary file with path: {0}",
-                            tempFile.getAbsolutePath()
-                    ));
-                }
-            }
-        } catch (IOException e) {
-            log.error(MessageFormat.format(
-                    "Failed to create a temporary file or write data to it: {0}",
-                    e.getMessage()
-            ));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
-                    FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
-                    FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
+            return ResponseEntity.ok(new FilesLoaderResponse(
+                    FileLoaderResponseCodes.SUCCESS.name(),
+                    resultText
             ));
         } catch (Exception e) {
             log.error(MessageFormat.format("Error: {0}", e.getMessage()));
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
                     FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()

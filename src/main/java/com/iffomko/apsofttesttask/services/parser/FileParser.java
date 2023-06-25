@@ -3,9 +3,10 @@ package com.iffomko.apsofttesttask.services.parser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -46,22 +47,55 @@ public class FileParser implements IFileParser {
                     .map(Section::parse)
                     .collect(Collectors.joining(""));
 
-            return MessageFormat.format(
-                    "<!doctype html>" +
-                            "<html lang=\"en\">" +
-                            "<head>" +
-                            "<meta charset=\"UTF-16\">" +
-                            "<meta name=\"viewport\" content=\"width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0\">" +
-                            "<meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">" +
-                            "<title>Document</title>" +
-                            "</head>" +
-                            "<body>" +
-                            "<h1>Содержание:</h1>" +
-                            "{0}" +
-                            "<h1>Текст:</h1>" +
-                            "{1}" +
-                            "</body>" +
-                            "</html>",
+            return String.format(
+                    """
+                            <!DOCTYPE html>
+                            <html lang="en">
+                            <head>
+                                <meta charset="UTF-8">
+                                <title>Title</title>
+                                <link rel="preconnect" href="https://fonts.googleapis.com">
+                                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+                                <style>
+                                    * {
+                                        font-family: 'Roboto', sans-serif;
+                                        color: #333;
+                                        font-size: 15px;
+                                        font-weight: 400;
+                                    }
+                                    a {
+                                        font-family: 'Roboto', sans-serif;
+                                        color: #333;
+                                        font-size: 15px;
+                                        font-style: italic;
+                                        font-weight: 400;
+                                        text-decoration: none;
+                                    }
+                                    a:visited, a:focus, a:hover {
+                                        color: #333;
+                                    }
+                                    a:hover {
+                                        text-decoration: underline;
+                                    }
+                                    h1 {
+                                        font-family: 'Roboto', sans-serif;
+                                        color: #333;
+                                        font-size: 25px;
+                                        font-weight: 400;
+                                                        
+                                        margin: 15px 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                            <h1>Содержание:</h1>
+                            %s
+                            <h1>Текст:</h1>
+                            %s
+                            </body>
+                            </html>
+                            """,
                     sectionsText,
                     text
             );
@@ -163,63 +197,54 @@ public class FileParser implements IFileParser {
     }
 
     /**
-     * Метод, который парсит текст файла в определенный формат.
+     * Метод, который парсит текст файла в определенный формат
      *
-     * @param file файл, текст которого нужно обработать
-     * @return переформатированный текст файла
-     * @throws IOException возникает когда невозможно прочитать файл
+     * @param splitText список строчек, которые надо обработать
+     * @return переформатированный текст
      */
     @Override
-    public String parse(File file) throws IOException {
-        if (!file.exists()) {
-            throw new IOException("File not found");
-        }
+    public String parse(List<String> splitText) {
+        List<String> lines = new ArrayList<>();
+        List<SectionItem> notParsedSections = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            List<String> splitFile = reader.lines().collect(Collectors.toCollection(ArrayList::new));
+        int index = 0;
 
-            List<String> lines = new ArrayList<>();
-            List<SectionItem> notParsedSections = new ArrayList<>();
+        for (String line : splitText) {
+            lines.add(removeSectionDesignator(line, sectionTag));
 
-            int index = 0;
-
-            for (String line : splitFile) {
-                lines.add(removeSectionDesignator(line, sectionTag));
-
-                if (line.startsWith("#")) {
-                    notParsedSections.add(new SectionItem(index, line));
-                }
-
-                index++;
+            if (line.startsWith("#")) {
+                notParsedSections.add(new SectionItem(index, line));
             }
 
-            List<Section> parsedSections = new ArrayList<>();
+            index++;
+        }
 
-            for (SectionItem section : notParsedSections) {
-                String sectionTitle = section.sectionTitle();
-                int sectionIndex = section.index();
+        List<Section> parsedSections = new ArrayList<>();
 
-                int currentDepth = getDepth(sectionTitle, sectionTag);
+        for (SectionItem section : notParsedSections) {
+            String sectionTitle = section.sectionTitle();
+            int sectionIndex = section.index();
 
-                String sectionName = removeSectionDesignator(sectionTitle, sectionTag);
-                String depth = printDepth(currentDepth);
-                String sectionId = UUID.randomUUID().toString();
+            int currentDepth = getDepth(sectionTitle, sectionTag);
 
-                parsedSections.add(new Section(depth + sectionName, sectionId));
+            String sectionName = removeSectionDesignator(sectionTitle, sectionTag);
+            String depth = printDepth(currentDepth);
+            String sectionId = UUID.randomUUID().toString();
 
-                lines.add(sectionIndex, new Paragraph(lines.get(sectionIndex), sectionId).parse());
-                lines.remove(sectionIndex + 1);
+            parsedSections.add(new Section(MessageFormat.format("{0} {1}", depth, sectionName), sectionId));
+
+            lines.add(sectionIndex, new Paragraph(lines.get(sectionIndex), sectionId).parse());
+            lines.remove(sectionIndex + 1);
+        }
+
+        String text = lines.stream().map(item -> {
+            if (item.startsWith("<div")) {
+                return item;
             }
 
-            String text = lines.stream().map(item -> {
-                if (item.startsWith("<div")) {
-                    return item;
-                }
+            return new Paragraph(item, null).parse();
+        }).collect(Collectors.joining(""));
 
-                return new Paragraph(item, null).parse();
-            }).collect(Collectors.joining(""));
-
-            return new Html(parsedSections, text).parse();
-        }
+        return new Html(parsedSections, text).parse();
     }
 }

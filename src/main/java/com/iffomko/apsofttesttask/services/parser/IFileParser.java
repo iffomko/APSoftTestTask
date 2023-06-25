@@ -1,19 +1,17 @@
 package com.iffomko.apsofttesttask.services.parser;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
 
 /**
- * Закрепляет контракт для всех парсеров файлов, чтобы был метод <code>parse(File file)</code>,
- * который принимает какой-то файл и возвращает обработанные данные в определенном формате
+ * Закрепляет контракт для всех парсеров строчек, чтобы был метод <code>parse(List<String> lines)</code>,
+ * который принимает какой-то набор строчек и возвращает обработанные данные в определенном формате
  */
 public interface IFileParser {
     /**
      * Метод, который парсит текст файла в определенный формат
      *
-     * @param file файл, текст которого нужно обработать
-     * @return переформатированный текст файла
-     * @throws IOException возникает когда невозможно прочитать файл
+     * @param splitText список строчек, которые надо обработать
+     * @return переформатированный текст
      */
-    String parse(File file) throws IOException;
+    String parse(List<String> splitText);
 }
