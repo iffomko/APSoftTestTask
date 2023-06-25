@@ -24,12 +24,12 @@ API принимает на вход файл (ограничение в 1 Мб)
 ## Коды ответа
 ~ **SUCCESS**: ответ является успешным и содержит в себе данные \
 ~ **INTERNAL_SERVER_ERROR**: на сервере произошла ошибка и стоит попробовать сделать запрос чуть позже \
-~ **INCORRECT_REQUEST_TYPE**: который вы передали на endpoint `/api/v1/files/parser` неправильного типа \
+~ **INCORRECT_REQUEST_TYPE**: тип файла, который вы передали на endpoint `/api/v1/files/parser` неправильного типа \
 ~ **INCORRECT_ENCODING**: кодировка файла некорректная (используйте UTF-8) \
 ~ **HTTP_REQUEST_METHOD_NOT_SUPPORTED**: HTTP-метод, который вы используете для запроса не поддерживается сервером \
 ~ **HTTP_MEDIA_TYPE_NOT_SUPPORTED**: тип контента в POSTs, PUTs, PATCHes запросах не поддерживается endpoint'ом \
-~ **HTTP_MEDIA_TYPE_NOT_ACCEPTABLE**: заголовок Accept у клиента, не поддерживает тот тип, который хочет вернуть сервер \
-~ **MISSING_PATH_VARIABLE**: клиент в URI пропустил необходимую переменную \
+~ **HTTP_MEDIA_TYPE_NOT_ACCEPTABLE**: заголовок Accept при запросе, не поддерживает тот тип, который хочет вернуть сервер \
+~ **MISSING_PATH_VARIABLE**: при отправке запроса в URI клиент пропустил необходимую переменную \
 ~ **MISSING_SERVLET_REQUEST_PARAMETER**: что клиент пропустил необходимый параметр \
 ~ **MISSING_SERVLET_REQUEST_PART**: сервер не нашел часть 'multipart/form-data' запроса с указанным именем \
 ~ **MISSING_SERVLET_BINDING_EXCEPTION**: сервер не может привязать те параметры, которые передал ему клиент к контроллеру \
