@@ -91,15 +91,17 @@ public class IntoHtmlFileParser implements IFileParser {
                                 </style>
                             </head>
                             <body>
-                            <h1>Содержание:</h1>
                             %s
-                            <h1>Текст:</h1>
+                            %s
+                            %s
                             %s
                             </body>
                             </html>
                             """,
+                    sectionsText.length() != 0 ? "<h1>Содержание:</h1>" : "",
                     sectionsText,
-                    text
+                    text != null && !text.equals("<div></div>") ? "<h1>Текст:</h1>" : "",
+                    text != null && !text.equals("<div></div>") ? text : ""
             );
         }
     }
