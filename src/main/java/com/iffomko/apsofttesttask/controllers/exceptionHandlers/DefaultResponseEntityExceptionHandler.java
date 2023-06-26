@@ -1,8 +1,8 @@
-package com.iffomko.apsofttesttask.controllers.advices;
+package com.iffomko.apsofttesttask.controllers.exceptionHandlers;
 
-import com.iffomko.apsofttesttask.controllers.advices.enums.AdviceCodes;
-import com.iffomko.apsofttesttask.controllers.advices.enums.AdviceMessages;
-import com.iffomko.apsofttesttask.controllers.advices.responses.*;
+import com.iffomko.apsofttesttask.controllers.exceptionHandlers.utils.ResponseEntityExceptionHandlerCodes;
+import com.iffomko.apsofttesttask.controllers.exceptionHandlers.utils.ResponseEntityExceptionHandlerMessages;
+import com.iffomko.apsofttesttask.controllers.exceptionHandlers.responses.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
@@ -34,7 +34,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestControllerAdvice
-public class DefaultAdvice extends ResponseEntityExceptionHandler {
+public class DefaultResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Перехватывает исключение <code>HttpRequestMethodNotSupportedException</code>,
      * которое возникает тогда, когда обработчик запросов не поддерживает метод
@@ -53,8 +53,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
     ) {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new HttpRequestMethodNotSupportedResponse(
-                AdviceMessages.HTTP_REQUEST_METHOD_NOT_SUPPORTED.getMessage(),
-                AdviceCodes.HTTP_REQUEST_METHOD_NOT_SUPPORTED.name(),
+                ResponseEntityExceptionHandlerMessages.HTTP_REQUEST_METHOD_NOT_SUPPORTED.getMessage(),
+                ResponseEntityExceptionHandlerCodes.HTTP_REQUEST_METHOD_NOT_SUPPORTED.name(),
                 status.value(),
                 ex.getMethod(),
                 ex.getSupportedMethods()
@@ -80,8 +80,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
     ) {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new HttpMediaTypeNotSupportedResponse(
-                AdviceMessages.HTTP_MEDIA_TYPE_NOT_SUPPORTED.getMessage(),
-                AdviceCodes.HTTP_MEDIA_TYPE_NOT_SUPPORTED.name(),
+                ResponseEntityExceptionHandlerMessages.HTTP_MEDIA_TYPE_NOT_SUPPORTED.getMessage(),
+                ResponseEntityExceptionHandlerCodes.HTTP_MEDIA_TYPE_NOT_SUPPORTED.name(),
                 status.value(),
                 Objects.requireNonNull(ex.getContentType()).getType(),
                 (String[]) ex.getSupportedMediaTypes().stream().map(MediaType::getType).toArray()
@@ -108,7 +108,7 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new HttpMediaTypeNotAcceptableResponse(
                 ex.getMessage(),
-                AdviceCodes.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE.name(),
+                ResponseEntityExceptionHandlerCodes.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE.name(),
                 status.value(),
                 (String[]) ex.getSupportedMediaTypes().stream().map(MediaType::getType).toArray()
         ));
@@ -132,8 +132,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
     ) {
         log.debug(MessageFormat.format("{0}, variable name: {1}", ex.getMessage(), ex.getVariableName()));
         return ResponseEntity.status(status.value()).body(new MissingPathVariableResponse(
-                AdviceMessages.MISSING_PATH_VARIABLE.getMessage(),
-                AdviceCodes.MISSING_PATH_VARIABLE.name(),
+                ResponseEntityExceptionHandlerMessages.MISSING_PATH_VARIABLE.getMessage(),
+                ResponseEntityExceptionHandlerCodes.MISSING_PATH_VARIABLE.name(),
                 status.value(),
                 ex.getVariableName()
         ));
@@ -162,8 +162,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
                 ex.getParameterName()
         ));
         return ResponseEntity.status(status.value()).body(new MissingServletRequestParameterResponse(
-                AdviceMessages.MISSING_SERVLET_REQUEST_PARAMETER.getMessage(),
-                AdviceCodes.MISSING_SERVLET_REQUEST_PARAMETER.name(),
+                ResponseEntityExceptionHandlerMessages.MISSING_SERVLET_REQUEST_PARAMETER.getMessage(),
+                ResponseEntityExceptionHandlerCodes.MISSING_SERVLET_REQUEST_PARAMETER.name(),
                 status.value(),
                 ex.getParameterType(),
                 ex.getParameterName()
@@ -193,8 +193,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
                 ex.getRequestPartName()
         ));
         return ResponseEntity.status(status.value()).body(new MissingServletRequestPartResponse(
-                AdviceMessages.MISSING_SERVLET_REQUEST_PART.getMessage(),
-                AdviceCodes.MISSING_SERVLET_REQUEST_PART.name(),
+                ResponseEntityExceptionHandlerMessages.MISSING_SERVLET_REQUEST_PART.getMessage(),
+                ResponseEntityExceptionHandlerCodes.MISSING_SERVLET_REQUEST_PART.name(),
                 status.value(),
                 ex.getRequestPartName()
         ));
@@ -220,7 +220,7 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new BaseResponse(
                 ex.getMessage(),
-                AdviceCodes.MISSING_SERVLET_BINDING_EXCEPTION.name(),
+                ResponseEntityExceptionHandlerCodes.MISSING_SERVLET_BINDING_EXCEPTION.name(),
                 status.value()
         ));
     }
@@ -247,8 +247,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
                 ex.getParameter().getParameterName()
         ));
         return ResponseEntity.status(status.value()).body(new MethodArgumentNotValidResponse(
-                AdviceMessages.METHOD_ARGUMENT_NOT_VALID.getMessage(),
-                AdviceCodes.METHOD_ARGUMENT_NOT_VALID.name(),
+                ResponseEntityExceptionHandlerMessages.METHOD_ARGUMENT_NOT_VALID.getMessage(),
+                ResponseEntityExceptionHandlerCodes.METHOD_ARGUMENT_NOT_VALID.name(),
                 status.value(),
                 ex.getParameter().getParameterName()
         ));
@@ -276,8 +276,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
                 ex.getRequestURL()
         ));
         return ResponseEntity.status(status.value()).body(new NoHandlerFoundExceptionResponse(
-                AdviceMessages.NO_HANDLER_FOUND_EXCEPTION.getMessage(),
-                AdviceCodes.NO_HANDLER_FOUND_EXCEPTION.name(),
+                ResponseEntityExceptionHandlerMessages.NO_HANDLER_FOUND_EXCEPTION.getMessage(),
+                ResponseEntityExceptionHandlerCodes.NO_HANDLER_FOUND_EXCEPTION.name(),
                 status.value(),
                 ex.getRequestURL()
         ));
@@ -301,8 +301,8 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
     ) {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new BaseResponse(
-                AdviceMessages.ASYNC_REQUEST_TIMEOUT_EXCEPTION.getMessage(),
-                AdviceCodes.ASYNC_REQUEST_TIMEOUT_EXCEPTION.name(),
+                ResponseEntityExceptionHandlerMessages.ASYNC_REQUEST_TIMEOUT_EXCEPTION.getMessage(),
+                ResponseEntityExceptionHandlerCodes.ASYNC_REQUEST_TIMEOUT_EXCEPTION.name(),
                 status.value()
         ));
     }
@@ -326,7 +326,7 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new BaseResponse(
                 ex.getMessage(),
-                AdviceCodes.CONVERSION_NOT_SUPPORTED.name(),
+                ResponseEntityExceptionHandlerCodes.CONVERSION_NOT_SUPPORTED.name(),
                 status.value()
         ));
     }
@@ -350,7 +350,7 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new BaseResponse(
                 ex.getMessage(),
-                AdviceCodes.TYPE_MISMATCH.name(),
+                ResponseEntityExceptionHandlerCodes.TYPE_MISMATCH.name(),
                 status.value()
         ));
     }
@@ -374,7 +374,7 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new BaseResponse(
                 ex.getMessage(),
-                AdviceCodes.HTTP_MESSAGE_NOT_READABLE.name(),
+                ResponseEntityExceptionHandlerCodes.HTTP_MESSAGE_NOT_READABLE.name(),
                 status.value()
         ));
     }
@@ -398,7 +398,7 @@ public class DefaultAdvice extends ResponseEntityExceptionHandler {
         log.debug(ex.getMessage());
         return ResponseEntity.status(status.value()).body(new BaseResponse(
                 ex.getMessage(),
-                AdviceCodes.HTTP_MESSAGE_NOT_WRITABLE.name(),
+                ResponseEntityExceptionHandlerCodes.HTTP_MESSAGE_NOT_WRITABLE.name(),
                 status.value()
         ));
     }

@@ -1,4 +1,4 @@
-package com.iffomko.apsofttesttask.controllers.advices.responses;
+package com.iffomko.apsofttesttask.controllers.exceptionHandlers.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

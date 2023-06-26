@@ -1,4 +1,4 @@
-package com.iffomko.apsofttesttask.services.responses.enums;
+package com.iffomko.apsofttesttask.services.responses.utils;
 
 /**
  * Перечисление, которое содержит все коды возврата для ответов <code>FilesLoaderResponse</code>
