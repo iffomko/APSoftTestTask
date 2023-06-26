@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -44,10 +45,10 @@ public class FilesLoaderControllerTests {
         ResponseEntity<?> actualResult = filesLoaderController.handlePostFileParser(multipartFile);
         FilesLoaderErrorResponse body = (FilesLoaderErrorResponse)actualResult.getBody();
 
-        assertEquals(actualResult.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(HttpStatus.BAD_REQUEST, actualResult.getStatusCode());
         assert body != null;
-        assertEquals(body.getMessage(), FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage());
-        assertEquals(body.getCode(), FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name());
+        assertEquals(FileLoaderResponseMessages.INCORRECT_REQUEST_TYPE.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INCORRECT_REQUEST_TYPE.name(), body.getCode());
     }
 
     @Test
@@ -67,10 +68,33 @@ public class FilesLoaderControllerTests {
         ResponseEntity<?> actualResult = filesLoaderController.handlePostFileParser(multipartFile);
         FilesLoaderErrorResponse body = (FilesLoaderErrorResponse)actualResult.getBody();
 
-        assertEquals(actualResult.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResult.getStatusCode());
         assert body != null;
-        assertEquals(body.getMessage(), FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage());
-        assertEquals(body.getCode(), FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name());
+        assertEquals(FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name(), body.getCode());
+    }
+
+    @Test
+    @DisplayName(
+            "POST /api/v1/files/parser тестирует случай, " +
+            "когда HTTP статус BAD REQUEST и возвращается ошибка с кодом IncorrectEncoding"
+    )
+    void handlePostFileParser_returnsIncorrectEncoding() {
+        when(multipartFile.getContentType()).thenReturn(MediaType.TEXT_PLAIN_VALUE);
+
+        try {
+            when(multipartFile.getBytes()).thenThrow(new UnsupportedEncodingException("Incorrect encoding"));
+        } catch (IOException e) {
+            // just ignore
+        }
+
+        ResponseEntity<?> actualResult = filesLoaderController.handlePostFileParser(multipartFile);
+        FilesLoaderErrorResponse body = (FilesLoaderErrorResponse)actualResult.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, actualResult.getStatusCode());
+        assert body != null;
+        assertEquals(FileLoaderResponseMessages.INCORRECT_ENCODING.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INCORRECT_ENCODING.name(), body.getCode());
     }
 
     @Test
@@ -92,9 +116,9 @@ public class FilesLoaderControllerTests {
         ResponseEntity<?> actualResult = filesLoaderController.handlePostFileParser(multipartFile);
         FilesLoaderResponse body = (FilesLoaderResponse) actualResult.getBody();
 
-        assertEquals(actualResult.getStatusCode(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, actualResult.getStatusCode());
         assert body != null;
-        assertEquals(body.getCode(), FileLoaderResponseCodes.SUCCESS.name());
-        assertEquals(body.getData(), "test");
+        assertEquals(FileLoaderResponseCodes.SUCCESS.name(), body.getCode());
+        assertEquals("test", body.getData());
     }
 }

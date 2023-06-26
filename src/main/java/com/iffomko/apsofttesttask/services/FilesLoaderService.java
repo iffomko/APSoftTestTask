@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.text.MessageFormat;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilesLoaderService {
     private final IFileParser fileParser;
+    private final Charset charset;
 
     /**
      * @param fileParser парсер файлов
@@ -35,6 +38,7 @@ public class FilesLoaderService {
     @Autowired
     public FilesLoaderService(@Qualifier("intoHtmlFileParser") IFileParser fileParser) {
         this.fileParser = fileParser;
+        this.charset = StandardCharsets.UTF_8;
     }
 
     /**
@@ -43,9 +47,25 @@ public class FilesLoaderService {
      * @return список строчек
      */
     private List<String> getLines(byte[] bytes) {
-        String text = new String(bytes);
+        String text = new String(bytes, charset);
 
         return Arrays.stream(text.split("\r|\n|\r\n")).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Переводит стек вызовов в строковое представление
+     * @param stackTraceElements сам стек вызовов
+     * @return строковое представление
+     */
+    private String stackTraceElementsToString(StackTraceElement[] stackTraceElements) {
+        StringBuilder stringView = new StringBuilder();
+
+        for (StackTraceElement stackTraceElement : stackTraceElements) {
+            stringView.append(stackTraceElement);
+            stringView.append("\r\n");
+        }
+
+        return stringView.toString();
     }
 
     /**
@@ -60,8 +80,8 @@ public class FilesLoaderService {
     public ResponseEntity<?> parseFile(MultipartFile multipartFile) {
         try {
             if (!(Objects.equals(multipartFile.getContentType(), MediaType.TEXT_PLAIN_VALUE))) {
-                log.error(MessageFormat.format(
-                        "Invalid content-type in the request: {0}",
+                log.error(String.format(
+                        "Invalid content-type in the request: %s",
                         multipartFile.getContentType()
                 ));
                 return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
@@ -78,8 +98,18 @@ public class FilesLoaderService {
                     FileLoaderResponseCodes.SUCCESS.name(),
                     resultText
             ));
+        } catch (UnsupportedEncodingException e) {
+            log.error(String.format("Unsupported encoding exception: %s", e.getMessage()));
+            return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
+                    FileLoaderResponseMessages.INCORRECT_ENCODING.getMessage(),
+                    FileLoaderResponseCodes.INCORRECT_ENCODING.name()
+            ));
         } catch (Exception e) {
-            log.error(MessageFormat.format("Error: {0}", e.getMessage()));
+            log.error(String.format(
+                    "Internal server error:\r\nmessage: %s\r\nstack trace: %s",
+                    e.getMessage(),
+                    stackTraceElementsToString(e.getStackTrace())
+            ));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
                     FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()

@@ -3,7 +3,6 @@ package com.iffomko.apsofttesttask.services.parser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,8 +26,8 @@ public class IntoHtmlFileParser implements IFileParser {
      */
     private record Section(String data, String id) {
         public String parse() {
-            return MessageFormat.format(
-                    "<div><a class=\"section_link\" href=\"#{0}\">{1}</a></div>",
+            return String.format(
+                    "<div><a class=\"section_link\" href=\"#%s\">%s</a></div>",
                     id, data);
         }
     }
@@ -118,14 +117,14 @@ public class IntoHtmlFileParser implements IFileParser {
     private record Paragraph(String data, String id) {
         public String parse() {
             if (id == null) {
-                return MessageFormat.format(
-                        "<div>{0}</div>",
+                return String.format(
+                        "<div>%s</div>",
                         data
                 );
             }
 
-            return MessageFormat.format(
-                    "<div><a name=\"{0}\">{1}</a></div>",
+            return String.format(
+                    "<div><a name=\"%s\">%s</a></div>",
                     id,
                     data
             );
@@ -240,7 +239,7 @@ public class IntoHtmlFileParser implements IFileParser {
             String depth = printDepth(currentDepth);
             String sectionId = String.format("%d_%d", sectionIndex, Math.abs(sectionTitle.hashCode()));
 
-            parsedSections.add(new Section(MessageFormat.format("{0} {1}", depth, sectionName), sectionId));
+            parsedSections.add(new Section(String.format("%s %s", depth, sectionName), sectionId));
 
             lines.add(sectionIndex, new Paragraph(lines.get(sectionIndex), sectionId).parse());
             lines.remove(sectionIndex + 1);

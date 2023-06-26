@@ -22,6 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 @ExtendWith(MockitoExtension.class)
 public class FilesLoaderServiceTests {
@@ -154,7 +157,7 @@ public class FilesLoaderServiceTests {
     }
 
     @Test
-    @DisplayName("Тестирование когда файл равен null")
+    @DisplayName("Тестирование случая, когда файл равен null")
     void testForInputMultipartFileIsNull() {
         ResponseEntity<?> actualResult = service.parseFile(null);
         FilesLoaderErrorResponse body = (FilesLoaderErrorResponse) actualResult.getBody();
@@ -163,5 +166,25 @@ public class FilesLoaderServiceTests {
         assert body != null;
         assertEquals(FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(), body.getMessage());
         assertEquals(FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name(), body.getCode());
+    }
+
+    @Test
+    @DisplayName("Тестирование случая, когда у входящего файла неверная кодировка")
+    void testForInputMultipartFileIncorrectEncoding() {
+        when(multipartFile.getContentType()).thenReturn(MediaType.TEXT_PLAIN_VALUE);
+
+        try {
+            when(multipartFile.getBytes()).thenThrow(new UnsupportedEncodingException("Incorrect exception"));
+        } catch (IOException e) {
+            // just ignore
+        }
+
+        ResponseEntity<?> actualResult = service.parseFile(multipartFile);
+        FilesLoaderErrorResponse body = (FilesLoaderErrorResponse) actualResult.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, actualResult.getStatusCode());
+        assert body != null;
+        assertEquals(FileLoaderResponseMessages.INCORRECT_ENCODING.getMessage(), body.getMessage());
+        assertEquals(FileLoaderResponseCodes.INCORRECT_ENCODING.name(), body.getCode());
     }
 }

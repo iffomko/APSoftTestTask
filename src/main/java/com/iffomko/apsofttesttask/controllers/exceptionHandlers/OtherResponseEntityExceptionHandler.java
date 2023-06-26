@@ -32,8 +32,8 @@ public class OtherResponseEntityExceptionHandler {
             SizeLimitExceededException ex,
             WebRequest request
     ) {
-        log.debug(MessageFormat.format(
-                "{0}, actual size: {1}, permitted size: {2}",
+        log.debug(String.format(
+                "%s, actual size: %s, permitted size: %s",
                 ResponseEntityExceptionHandlerMessages.SIZE_LIMIT_EXCEEDED_EXCEPTION.getMessage(),
                 ex.getActualSize(),
                 ex.getPermittedSize()
