@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +53,22 @@ public class FilesLoaderService {
     }
 
     /**
+     * Переводит стек вызовов в строковое представление
+     * @param stackTraceElements сам стек вызовов
+     * @return строковое представление
+     */
+    private String stackTraceElementsToString(StackTraceElement[] stackTraceElements) {
+        StringBuilder stringView = new StringBuilder();
+
+        for (StackTraceElement stackTraceElement : stackTraceElements) {
+            stringView.append(stackTraceElement);
+            stringView.append("\r\n");
+        }
+
+        return stringView.toString();
+    }
+
+    /**
      * <p>
      *     Парсит текстовый файл из формата, где символ '#' указывает на начало раздела,
      *     а количество повторений этого символа для раздела указывает на его вложенность,
@@ -65,8 +80,8 @@ public class FilesLoaderService {
     public ResponseEntity<?> parseFile(MultipartFile multipartFile) {
         try {
             if (!(Objects.equals(multipartFile.getContentType(), MediaType.TEXT_PLAIN_VALUE))) {
-                log.error(MessageFormat.format(
-                        "Invalid content-type in the request: {0}",
+                log.error(String.format(
+                        "Invalid content-type in the request: %s",
                         multipartFile.getContentType()
                 ));
                 return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
@@ -84,16 +99,16 @@ public class FilesLoaderService {
                     resultText
             ));
         } catch (UnsupportedEncodingException e) {
-            log.error(MessageFormat.format("Unsupported encoding exception: {0}", e.getMessage()));
+            log.error(String.format("Unsupported encoding exception: %s", e.getMessage()));
             return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INCORRECT_ENCODING.getMessage(),
                     FileLoaderResponseCodes.INCORRECT_ENCODING.name()
             ));
         } catch (Exception e) {
-            log.error(MessageFormat.format(
-                    "Internal server error:\r\nmessage: {0}\r\nstack trace: {1}",
+            log.error(String.format(
+                    "Internal server error:\r\nmessage: %s\r\nstack trace: %s",
                     e.getMessage(),
-                    e.getStackTrace()
+                    stackTraceElementsToString(e.getStackTrace())
             ));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),

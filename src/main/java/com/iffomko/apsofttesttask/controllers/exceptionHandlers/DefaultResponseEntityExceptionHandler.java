@@ -130,7 +130,7 @@ public class DefaultResponseEntityExceptionHandler extends ResponseEntityExcepti
             HttpStatusCode status,
             WebRequest request
     ) {
-        log.debug(MessageFormat.format("{0}, variable name: {1}", ex.getMessage(), ex.getVariableName()));
+        log.debug(String.format("%s, variable name: %s", ex.getMessage(), ex.getVariableName()));
         return ResponseEntity.status(status.value()).body(new MissingPathVariableResponse(
                 ResponseEntityExceptionHandlerMessages.MISSING_PATH_VARIABLE.getMessage(),
                 ResponseEntityExceptionHandlerCodes.MISSING_PATH_VARIABLE.name(),
@@ -155,8 +155,8 @@ public class DefaultResponseEntityExceptionHandler extends ResponseEntityExcepti
             HttpStatusCode status,
             WebRequest request
     ) {
-        log.debug(MessageFormat.format(
-                "{0}, type: {1}, name: {2}",
+        log.debug(String.format(
+                "%s, type: %s, name: %s",
                 ex.getMessage(),
                 ex.getParameterType(),
                 ex.getParameterName()
@@ -187,8 +187,8 @@ public class DefaultResponseEntityExceptionHandler extends ResponseEntityExcepti
             HttpStatusCode status,
             WebRequest request
     ) {
-        log.debug(MessageFormat.format(
-                "{0}, part-name: {1}",
+        log.debug(String.format(
+                "%s, part-name: %s",
                 ex.getMessage(),
                 ex.getRequestPartName()
         ));
@@ -241,8 +241,8 @@ public class DefaultResponseEntityExceptionHandler extends ResponseEntityExcepti
             HttpStatusCode status,
             WebRequest request
     ) {
-        log.debug(MessageFormat.format(
-                "{0}, parameter-name: {1}",
+        log.debug(String.format(
+                "%s, parameter-name: %s",
                 ex.getMessage(),
                 ex.getParameter().getParameterName()
         ));
@@ -270,8 +270,8 @@ public class DefaultResponseEntityExceptionHandler extends ResponseEntityExcepti
             HttpStatusCode status,
             WebRequest request
     ) {
-        log.debug(MessageFormat.format(
-                "{0}, parameter-name: {1}",
+        log.debug(String.format(
+                "%s, parameter-name: %s",
                 ex.getMessage(),
                 ex.getRequestURL()
         ));
