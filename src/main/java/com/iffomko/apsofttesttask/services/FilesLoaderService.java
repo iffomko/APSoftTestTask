@@ -14,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilesLoaderService {
     private final IFileParser fileParser;
+    private final Charset charset;
 
     /**
      * @param fileParser парсер файлов
@@ -35,6 +39,7 @@ public class FilesLoaderService {
     @Autowired
     public FilesLoaderService(@Qualifier("intoHtmlFileParser") IFileParser fileParser) {
         this.fileParser = fileParser;
+        this.charset = StandardCharsets.UTF_8;
     }
 
     /**
@@ -43,7 +48,7 @@ public class FilesLoaderService {
      * @return список строчек
      */
     private List<String> getLines(byte[] bytes) {
-        String text = new String(bytes);
+        String text = new String(bytes, charset);
 
         return Arrays.stream(text.split("\r|\n|\r\n")).collect(Collectors.toCollection(ArrayList::new));
     }
@@ -78,8 +83,18 @@ public class FilesLoaderService {
                     FileLoaderResponseCodes.SUCCESS.name(),
                     resultText
             ));
+        } catch (UnsupportedEncodingException e) {
+            log.error(MessageFormat.format("Unsupported encoding exception: {0}", e.getMessage()));
+            return ResponseEntity.badRequest().body(new FilesLoaderErrorResponse(
+                    FileLoaderResponseMessages.INCORRECT_ENCODING.getMessage(),
+                    FileLoaderResponseCodes.INCORRECT_ENCODING.name()
+            ));
         } catch (Exception e) {
-            log.error(MessageFormat.format("Error: {0}", e.getMessage()));
+            log.error(MessageFormat.format(
+                    "Internal server error:\r\nmessage: {0}\r\nstack trace: {1}",
+                    e.getMessage(),
+                    e.getStackTrace()
+            ));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FilesLoaderErrorResponse(
                     FileLoaderResponseMessages.INTERNAL_SERVER_ERROR.getMessage(),
                     FileLoaderResponseCodes.INTERNAL_SERVER_ERROR.name()
