@@ -1,8 +1,8 @@
-package com.iffomko.apsofttesttask.controllers.advices;
+package com.iffomko.apsofttesttask.controllers.exceptionHandlers;
 
-import com.iffomko.apsofttesttask.controllers.advices.enums.AdviceCodes;
-import com.iffomko.apsofttesttask.controllers.advices.enums.AdviceMessages;
-import com.iffomko.apsofttesttask.controllers.advices.responses.SizeLimitExceededExceptionResponse;
+import com.iffomko.apsofttesttask.controllers.exceptionHandlers.utils.ResponseEntityExceptionHandlerCodes;
+import com.iffomko.apsofttesttask.controllers.exceptionHandlers.utils.ResponseEntityExceptionHandlerMessages;
+import com.iffomko.apsofttesttask.controllers.exceptionHandlers.responses.SizeLimitExceededExceptionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ import java.text.MessageFormat;
  */
 @Slf4j
 @RestControllerAdvice
-public class CustomAdvice {
+public class OtherResponseEntityExceptionHandler {
     /**
      * Обрабатывает исключение <code>SizeLimitExceededException</code>, которое
      * возникает когда размер загружаемого контента на сервер больше, чем максимальный
@@ -34,13 +34,13 @@ public class CustomAdvice {
     ) {
         log.debug(MessageFormat.format(
                 "{0}, actual size: {1}, permitted size: {2}",
-                AdviceMessages.SIZE_LIMIT_EXCEEDED_EXCEPTION.getMessage(),
+                ResponseEntityExceptionHandlerMessages.SIZE_LIMIT_EXCEEDED_EXCEPTION.getMessage(),
                 ex.getActualSize(),
                 ex.getPermittedSize()
         ));
         return ResponseEntity.badRequest().body(new SizeLimitExceededExceptionResponse(
-                AdviceMessages.SIZE_LIMIT_EXCEEDED_EXCEPTION.getMessage(),
-                AdviceCodes.SIZE_LIMIT_EXCEEDED_EXCEPTION.name(),
+                ResponseEntityExceptionHandlerMessages.SIZE_LIMIT_EXCEEDED_EXCEPTION.getMessage(),
+                ResponseEntityExceptionHandlerCodes.SIZE_LIMIT_EXCEEDED_EXCEPTION.name(),
                 HttpStatus.BAD_REQUEST.value(),
                 ex.getActualSize(),
                 ex.getPermittedSize()

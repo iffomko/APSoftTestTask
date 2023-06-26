@@ -2,9 +2,9 @@ package com.iffomko.apsofttesttask.services;
 
 import com.iffomko.apsofttesttask.services.responses.FilesLoaderErrorResponse;
 import com.iffomko.apsofttesttask.services.responses.FilesLoaderResponse;
-import com.iffomko.apsofttesttask.services.responses.enums.FileLoaderResponseCodes;
+import com.iffomko.apsofttesttask.services.responses.utils.FileLoaderResponseCodes;
 import com.iffomko.apsofttesttask.services.parser.IFileParser;
-import com.iffomko.apsofttesttask.services.responses.enums.FileLoaderResponseMessages;
+import com.iffomko.apsofttesttask.services.responses.utils.FileLoaderResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -1,6 +1,6 @@
-package com.iffomko.apsofttesttask.controllers.advices.enums;
+package com.iffomko.apsofttesttask.controllers.exceptionHandlers.utils;
 
-public enum AdviceCodes {
+public enum ResponseEntityExceptionHandlerCodes {
     HTTP_REQUEST_METHOD_NOT_SUPPORTED,
     HTTP_MEDIA_TYPE_NOT_SUPPORTED,
     HTTP_MEDIA_TYPE_NOT_ACCEPTABLE,

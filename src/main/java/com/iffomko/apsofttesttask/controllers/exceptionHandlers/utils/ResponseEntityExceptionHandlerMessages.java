@@ -1,6 +1,6 @@
-package com.iffomko.apsofttesttask.controllers.advices.enums;
+package com.iffomko.apsofttesttask.controllers.exceptionHandlers.utils;
 
-public enum AdviceMessages {
+public enum ResponseEntityExceptionHandlerMessages {
     HTTP_REQUEST_METHOD_NOT_SUPPORTED("The method you use for the request is not supported by the server"),
     HTTP_MEDIA_TYPE_NOT_SUPPORTED("Unsupported media was received or processed"),
     MISSING_PATH_VARIABLE("You missed a variable in the URI"),
@@ -13,7 +13,7 @@ public enum AdviceMessages {
 
     private final String message;
 
-    AdviceMessages(String message) {
+    ResponseEntityExceptionHandlerMessages(String message) {
         this.message = message;
     }
 
